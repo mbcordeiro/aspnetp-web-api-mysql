@@ -20,7 +20,7 @@ namespace APICatalog.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Category>> Get()
         {
-            return Ok(_context.Categories.ToList());
+            return Ok(_context.Categories.AsNoTracking().ToList());
         }
 
         [HttpGet("{id:int}", Name ="GetCategories")]
