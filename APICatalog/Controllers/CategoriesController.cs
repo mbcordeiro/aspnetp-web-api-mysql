@@ -1,6 +1,8 @@
 ﻿using APICatalog.Context;
+using APICatalog.DTOs;
 using APICatalog.Models;
 using APICatalog.Repositories;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,55 +13,73 @@ namespace APICatalog.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public CategoriesController(IUnitOfWork unitOfWork)
+        public CategoriesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<Category>> Get()
+        public ActionResult<IEnumerable<CategoryDTO>> Get()
         {
-            return Ok(_unitOfWork.CategoryRepostory.Get().ToList());
+            var categories = _unitOfWork.CategoryRepostory.Get().ToList();
+            if (categories is null)
+            {
+                return NotFound("Categories Not Found");
+            }
+            var categoriesDto = _mapper.Map<List<ProductDTO>>(categories);
+            return Ok(categoriesDto);
         }
 
         [HttpGet("{id:int}", Name ="GetCategories")]
-        public ActionResult<Category> Get(int id)
+        public ActionResult<CategoryDTO> Get(int id)
         {
             var category = _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
             if (category == null)
             {
                 return NotFound("Category Not Found");
             }
-            return Ok(category);
+            var categoryDto = _mapper.Map<CategoryDTO>(category);
+            return Ok(categoryDto);
         }
 
         [HttpGet("products")]
         public ActionResult<IEnumerable<Category>> GetCategoriesProducts()
         {
-            return Ok(_unitOfWork.CategoryRepostory.GetCategoriesByProducts().ToList());
+            var category = _unitOfWork.CategoryRepostory.GetCategoriesByProducts().ToList();
+            if (category == null)
+            {
+                return NotFound("Categories Not Found");
+            }
+            var categoriesDto = _mapper.Map<CategoryDTO>(category);
+            return Ok(categoriesDto);
         }
 
         [HttpPost]
-        public ActionResult Post(Category category)
+        public ActionResult Post(CategoryDTO categoryDto)
         {
-            if (category is null)
+            if (categoryDto is null)
             {
                 return BadRequest();
             }
+            var category = _mapper.Map<Category>(categoryDto);
             _unitOfWork.CategoryRepostory.Add(category);
             _unitOfWork.Commit();
+            var dto = _mapper.Map<CategoryDTO>(category);
             return new CreatedAtRouteResult("Get Category",
-                new { id = category.CategoryId }, category);
+                new { id = dto.CategoryId }, dto);
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, Category category)
+        public ActionResult Put(int id, CategoryDTO categoryDto)
         {
-            if (id != category.CategoryId)
+            if (id != categoryDto.CategoryId)
             {
                 return BadRequest();
             }
+            var category = _mapper.Map<Category>(categoryDto);
             _unitOfWork.CategoryRepostory.Update(category);
             _unitOfWork.Commit();
             return NoContent();
