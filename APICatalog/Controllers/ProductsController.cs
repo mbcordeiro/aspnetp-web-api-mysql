@@ -1,5 +1,6 @@
 ﻿using APICatalog.Context;
 using APICatalog.Models;
+using APICatalog.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,17 +11,17 @@ namespace APICatalog.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ProductsController(AppDbContext context)
+        public ProductsController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Product>> Get()
         {
-            var products = _context.Products.ToList();
+            var products = _unitOfWork.ProductRepository.Get().ToList();
             if (products is null)
             {
                 return NotFound("Products Not Found");
@@ -31,12 +32,24 @@ namespace APICatalog.Controllers
         [HttpGet("{id:int}")]
         public ActionResult<Product> Get(int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
+            var product = _unitOfWork.ProductRepository
+                .GetById(p => p.ProductId == id);
             if (product is null)
             {
                 return NotFound("Product Not Found");
             }
             return product;
+        }
+
+        [HttpGet("price")]
+        public ActionResult<IEnumerable<Product>> GetProductsByPrice()
+        {
+            var products = _unitOfWork.ProductRepository.GetProductsByPrice().ToList();
+            if (products is null)
+            {
+                return NotFound("Products Not Found");
+            }
+            return products;
         }
 
         [HttpPost]
@@ -46,8 +59,8 @@ namespace APICatalog.Controllers
             {
                 return BadRequest();
             }
-            _context.Products.Add(product);
-            _context.SaveChanges();
+            _unitOfWork.ProductRepository.Add(product);
+            _unitOfWork.Commit();
             return new CreatedAtRouteResult("Get Product",
                 new { id = product.ProductId }, product);
         }
@@ -59,21 +72,22 @@ namespace APICatalog.Controllers
             {
                 return BadRequest(); 
             }
-            _context.Entry(product).State = EntityState.Modified;
-            _context.SaveChanges();
+            _unitOfWork.ProductRepository.Update(product);
+            _unitOfWork.Commit();
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var product = _context.Products.FirstOrDefault(p => p.ProductId == id);
+            var product = 
+                _unitOfWork.ProductRepository.GetById(p => p.ProductId == id);
             if (product is null)
             {
                 return NotFound("Product Not Found");
             }
-            _context.Products.Remove(product);
-            _context.SaveChanges();
+            _unitOfWork.ProductRepository.Delete(product);
+            _unitOfWork.Commit();
             return NoContent();
         }
     }

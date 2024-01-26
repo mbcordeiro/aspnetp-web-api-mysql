@@ -1,5 +1,6 @@
 ﻿using APICatalog.Context;
 using APICatalog.Models;
+using APICatalog.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,23 +10,23 @@ namespace APICatalog.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoriesController(AppDbContext context)
+        public CategoriesController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Category>> Get()
         {
-            return Ok(_context.Categories.AsNoTracking().ToList());
+            return Ok(_unitOfWork.CategoryRepostory.Get().ToList());
         }
 
         [HttpGet("{id:int}", Name ="GetCategories")]
         public ActionResult<Category> Get(int id)
         {
-            var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id);
+            var category = _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
             if (category == null)
             {
                 return NotFound("Category Not Found");
@@ -36,7 +37,7 @@ namespace APICatalog.Controllers
         [HttpGet("products")]
         public ActionResult<IEnumerable<Category>> GetCategoriesProducts()
         {
-            return Ok(_context.Categories.Include(p => p.Products).ToList());
+            return Ok(_unitOfWork.CategoryRepostory.GetCategoriesByProducts().ToList());
         }
 
         [HttpPost]
@@ -46,8 +47,8 @@ namespace APICatalog.Controllers
             {
                 return BadRequest();
             }
-            _context.Categories.Add(category);
-            _context.SaveChanges();
+            _unitOfWork.CategoryRepostory.Add(category);
+            _unitOfWork.Commit();
             return new CreatedAtRouteResult("Get Category",
                 new { id = category.CategoryId }, category);
         }
@@ -59,21 +60,21 @@ namespace APICatalog.Controllers
             {
                 return BadRequest();
             }
-            _context.Entry(category).State = EntityState.Modified;
-            _context.SaveChanges();
+            _unitOfWork.CategoryRepostory.Update(category);
+            _unitOfWork.Commit();
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id);
+            var category = _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
             if (category is null)
             {
                 return NotFound("Category Not Found");
             }
-            _context.Categories.Remove(category);
-            _context.SaveChanges();
+            _unitOfWork.CategoryRepostory.Delete(category);
+            _unitOfWork.Commit();
             return NoContent();
         }
     }
