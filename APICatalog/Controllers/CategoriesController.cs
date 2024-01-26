@@ -1,6 +1,5 @@
 ﻿using APICatalog.Context;
 using APICatalog.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,7 +28,7 @@ namespace APICatalog.Controllers
             var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id);
             if (category == null)
             {
-                return NotFound("CAtegory Not Found");
+                return NotFound("Category Not Found");
             }
             return Ok(category);
         }
