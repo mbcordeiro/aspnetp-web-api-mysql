@@ -24,9 +24,9 @@ namespace APICatalog.Controllers
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<CategoryDTO>> Get([FromQuery] CategoriesParameters categoriesParameters)
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get([FromQuery] CategoriesParameters categoriesParameters)
         {
-            var categories = _unitOfWork.CategoryRepostory.GetCategories(categoriesParameters);
+            var categories = await _unitOfWork.CategoryRepostory.GetCategories(categoriesParameters);
             var metadata = new
             {
                 categories.TotalCount,
@@ -46,9 +46,9 @@ namespace APICatalog.Controllers
         }
 
         [HttpGet("{id:int}", Name ="GetCategories")]
-        public ActionResult<CategoryDTO> Get(int id)
+        public async Task<ActionResult<CategoryDTO>> Get(int id)
         {
-            var category = _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
+            var category = await _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
             if (category == null)
             {
                 return NotFound("Category Not Found");
@@ -58,19 +58,15 @@ namespace APICatalog.Controllers
         }
 
         [HttpGet("products")]
-        public ActionResult<IEnumerable<Category>> GetCategoriesProducts()
+        public async Task<ActionResult<IEnumerable<CategoryDTO>>> GetCategoriesProducts()
         {
-            var category = _unitOfWork.CategoryRepostory.GetCategoriesByProducts().ToList();
-            if (category == null)
-            {
-                return NotFound("Categories Not Found");
-            }
-            var categoriesDto = _mapper.Map<CategoryDTO>(category);
-            return Ok(categoriesDto);
+            var category = await _unitOfWork.CategoryRepostory.GetCategoriesByProducts();
+            var categoriesDto = _mapper.Map<List<CategoryDTO>>(category);
+            return categoriesDto;
         }
 
         [HttpPost]
-        public ActionResult Post(CategoryDTO categoryDto)
+        public async Task<ActionResult> Post(CategoryDTO categoryDto)
         {
             if (categoryDto is null)
             {
@@ -78,14 +74,14 @@ namespace APICatalog.Controllers
             }
             var category = _mapper.Map<Category>(categoryDto);
             _unitOfWork.CategoryRepostory.Add(category);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
             var dto = _mapper.Map<CategoryDTO>(category);
             return new CreatedAtRouteResult("Get Category",
                 new { id = dto.CategoryId }, dto);
         }
 
         [HttpPut("{id:int}")]
-        public ActionResult Put(int id, CategoryDTO categoryDto)
+        public async Task<ActionResult> Put(int id, CategoryDTO categoryDto)
         {
             if (id != categoryDto.CategoryId)
             {
@@ -93,20 +89,20 @@ namespace APICatalog.Controllers
             }
             var category = _mapper.Map<Category>(categoryDto);
             _unitOfWork.CategoryRepostory.Update(category);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
             return NoContent();
         }
 
         [HttpDelete("{id:int}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            var category = _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
+            var category = await _unitOfWork.CategoryRepostory.GetById(c => c.CategoryId == id);
             if (category is null)
             {
                 return NotFound("Category Not Found");
             }
             _unitOfWork.CategoryRepostory.Delete(category);
-            _unitOfWork.Commit();
+            await _unitOfWork.Commit();
             return NoContent();
         }
     }
