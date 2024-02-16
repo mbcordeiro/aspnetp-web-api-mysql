@@ -75,6 +75,16 @@ builder.Services.AddAuthentication(
                         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:key"]))
                 });
 
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("PermitirApiRequest",
+//        builder =>
+//        builder.WithOrigins("https://github.com/mbcordeiro/")
+//     .WithMethods("GET")
+//     );
+//});
+builder.Services.AddCors();
+
 
 var mappingConfig = new MapperConfiguration(mc =>
 {
@@ -95,6 +105,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseCors(opt => opt.AllowAnyOrigin());
+
 
 app.MapControllers();
 
