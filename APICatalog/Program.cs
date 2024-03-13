@@ -1,9 +1,11 @@
 ﻿using APICatalog.Context;
 using APICatalog.DTOs.Mappings;
+using APICatalog.GraphQL;
 using APICatalog.Repositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -84,6 +86,7 @@ builder.Services.AddAuthentication(
 //     );
 //});
 builder.Services.AddCors();
+builder.Services.AddODataQueryFilter();
 
 
 var mappingConfig = new MapperConfiguration(mc =>
@@ -108,6 +111,7 @@ app.UseAuthorization();
 
 app.UseCors(opt => opt.AllowAnyOrigin());
 
+app.UseMiddleware<GraphQLMiddleware>();
 
 app.MapControllers();
 

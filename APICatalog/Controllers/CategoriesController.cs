@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -17,6 +18,7 @@ namespace APICatalog.Controllers
     [ApiController]
     [EnableCors("PermitirApiRequest")]
     [ApiConventionType(typeof(DefaultApiConventions))]
+    [EnableQuery]
     public class CategoriesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -48,6 +50,22 @@ namespace APICatalog.Controllers
             }
             var categoriesDto = _mapper.Map<List<ProductDTO>>(categories);
             return Ok(categoriesDto);
+        }
+
+        [HttpGet("pageable")]
+        public ActionResult<IEnumerable<CategoryDTO>> GetPageable(int page = 1, int size = 5)
+        {
+            if (size > 99)
+                size = 5;
+            var categorias = _unitOfWork.CategoryRepostory
+                .Page<Category>(page, size)
+                .ToList();
+            var count = _unitOfWork.CategoryRepostory.Count();
+            var pageNumber = ((int)Math.Ceiling((double)count / size));
+            Response.Headers["X-Total-Records"] = count.ToString();
+            Response.Headers["X-Page-Number"] = pageNumber.ToString();
+            var categories = _mapper.Map<List<CategoryDTO>>(categorias);
+            return categories;
         }
 
         [HttpGet("{id:int}", Name ="GetCategories")]

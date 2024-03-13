@@ -38,5 +38,18 @@ namespace APICatalog.Repositories
         {
             _context.Set<T>().Remove(entity);
         }
+
+        public List<T> Page<Tipo>(int page, int size)
+          where Tipo : class
+        {
+            return _context.Set<T>()
+                .Skip(size * (page - 1))
+                  .Take(size).ToList();
+        }
+
+        public int Count()
+        {
+            return _context.Set<T>().AsNoTracking().Count();
+        }
     }
 }

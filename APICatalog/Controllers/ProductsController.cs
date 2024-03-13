@@ -6,6 +6,7 @@ using APICatalog.Repositories;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
@@ -14,6 +15,7 @@ namespace APICatalog.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [ApiConventionType(typeof(DefaultApiConventions))]
+    [EnableQuery]
     public class ProductsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
