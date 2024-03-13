@@ -16,6 +16,7 @@ namespace APICatalog.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("PermitirApiRequest")]
+    [ApiConventionType(typeof(DefaultApiConventions))]
     public class CategoriesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

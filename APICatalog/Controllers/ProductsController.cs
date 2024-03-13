@@ -13,6 +13,7 @@ namespace APICatalog.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [ApiConventionType(typeof(DefaultApiConventions))]
     public class ProductsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
