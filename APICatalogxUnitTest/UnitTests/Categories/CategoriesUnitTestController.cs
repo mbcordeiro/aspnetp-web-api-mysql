@@ -11,7 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
-namespace APICatalogxUnitTest
+namespace APICatalogxUnitTest.UnitTests.Categories
 {
     public class CategoriesUnitTestController
     {

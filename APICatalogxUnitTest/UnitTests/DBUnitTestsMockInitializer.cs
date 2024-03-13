@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace APICatalogxUnitTest
+namespace APICatalogxUnitTest.UnitTests
 {
     class DBUnitTestsMockInitializer
     {
